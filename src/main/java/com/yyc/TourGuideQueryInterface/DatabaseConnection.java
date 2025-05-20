@@ -13,7 +13,7 @@ public class DatabaseConnection {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://localhost:3306/tourism_db");
         config.setUsername("root");
-        config.setPassword("123456");
+        config.setPassword("*");
         config.setMaximumPoolSize(10);
         config.setMinimumIdle(5);
         config.addDataSourceProperty("cachePrepStmts", "true");
