@@ -5,7 +5,7 @@
 
 <BorderPane fx:id="mainPane"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.yyc.travelsystem.MainController"
+            fx:controller="com.yyc.TourGuideQueryInterface.MainController"
             style="-fx-background-color: #f4f4f4;">
 
     <!-- 顶部工具栏 -->
@@ -22,7 +22,6 @@
                     onAction="#exportToCSV" />
 
             <ComboBox fx:id="themeCombo"
-                      items="浅色主题,深色主题"
                       promptText="选择主题"
                       style="-fx-pref-width: 120;" />
         </HBox>
@@ -42,7 +41,7 @@
                     style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-cursor: hand;" />
 
             <Button fx:id="tourGroupButton"
-                    text="🧳 旅游团"
+                    text="&#x1F6C5; 旅游团"
                     prefWidth="200"
                     onAction="#queryTourGroups"
                     style="-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-cursor: hand;" />
@@ -72,7 +71,7 @@
         <VBox spacing="10" style="-fx-padding: 10;">
             <HBox spacing="10">
                 <Label text="状态：" />
-                <Label fx:id="statusLabel" text="" style="-fx-text-fill: #007bff;" />
+                <Label fx:id="statusLabel" style="-fx-text-fill: #007bff;" />
             </HBox>
 
             <TableView fx:id="resultTable" style="-fx-table-cell-border-color: #ccc;">
@@ -87,7 +86,7 @@
     <bottom>
         <HBox alignment="CENTER"
               style="-fx-background-color: #e9ecef; -fx-padding: 10;">
-            <Label text="© 2025 导游管理系统" style="-fx-text-fill: #6c757d;" />
+            <Label text="© 2025 导游查询系统" style="-fx-text-fill: #6c757d;" />
         </HBox>
     </bottom>
 </BorderPane>

@@ -1,4 +1,4 @@
-package com.yyc.travelsystem;
+package com.yyc.TourGuideQueryInterface;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -32,7 +32,7 @@ public class LoginController {
         try {
             if (model.authenticate(guideId, password)) {
                 // 加载主界面
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/yyc/travelsystem/main.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/yyc/TourGuideQueryInterface/main.fxml"));
                 Parent root = loader.load();
                 MainController mainController = loader.getController();
                 mainController.setGuideId(guideId);

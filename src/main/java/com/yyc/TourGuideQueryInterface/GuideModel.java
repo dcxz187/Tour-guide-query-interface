@@ -1,4 +1,4 @@
-package com.yyc.travelsystem;
+package com.yyc.TourGuideQueryInterface;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;

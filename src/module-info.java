@@ -5,6 +5,6 @@ module travel.system {
     requires org.apache.commons.csv;
     requires jbcrypt;
     requires com.zaxxer.hikari;
-    opens com.yyc.travelsystem to javafx.fxml;
-    exports com.yyc.travelsystem;
+    opens com.yyc.TourGuideQueryInterface to javafx.fxml;
+    exports com.yyc.TourGuideQueryInterface;
 }

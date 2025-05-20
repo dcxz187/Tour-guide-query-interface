@@ -1,4 +1,4 @@
-package com.yyc.travelsystem;
+package com.yyc.TourGuideQueryInterface;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -160,5 +160,6 @@ public class MainController {
                 Objects.requireNonNull(getClass().getResource("/light-theme.css")).toExternalForm();
         mainPane.getScene().getStylesheets().clear();
         mainPane.getScene().getStylesheets().add(css);
+        statusLabel.setText("已切换至 " + theme);
     }
 }

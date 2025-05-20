@@ -1,4 +1,4 @@
-package com.yyc.travelsystem;
+package com.yyc.TourGuideQueryInterface;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
