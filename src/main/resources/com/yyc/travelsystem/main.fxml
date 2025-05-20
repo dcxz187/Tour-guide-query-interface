@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="mainPane"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.yyc.travelsystem.MainController"
+            style="-fx-background-color: #f4f4f4;">
+
+    <!-- 顶部工具栏 -->
+    <top>
+        <HBox spacing="15"
+              style="-fx-padding: 10; -fx-background-color: #ffffff; -fx-border-color: #ddd;">
+            <Label text="日期范围：" style="-fx-font-weight: bold;" />
+            <DatePicker fx:id="startDatePicker" />
+            <Label text="至" style="-fx-font-weight: bold;" />
+            <DatePicker fx:id="endDatePicker" />
+            <Button fx:id="exportButton"
+                    text="导出CSV"
+                    style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-cursor: hand;"
+                    onAction="#exportToCSV" />
+
+            <ComboBox fx:id="themeCombo"
+                      items="浅色主题,深色主题"
+                      promptText="选择主题"
+                      style="-fx-pref-width: 120;" />
+        </HBox>
+    </top>
+
+    <!-- 左侧导航 -->
+    <left>
+        <VBox spacing="10"
+              style="-fx-padding: 15; -fx-background-color: #ffffff; -fx-border-color: #ddd;">
+            <Label text="导航菜单" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+            <Separator />
+
+            <Button fx:id="profileButton"
+                    text="👤 个人信息"
+                    prefWidth="200"
+                    onAction="#queryProfile"
+                    style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-cursor: hand;" />
+
+            <Button fx:id="tourGroupButton"
+                    text="🧳 旅游团"
+                    prefWidth="200"
+                    onAction="#queryTourGroups"
+                    style="-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-cursor: hand;" />
+
+            <Button fx:id="clientButton"
+                    text="👥 客户"
+                    prefWidth="200"
+                    onAction="#queryClients"
+                    style="-fx-background-color: #ffc107; -fx-text-fill: black; -fx-cursor: hand;" />
+
+            <Button fx:id="contractButton"
+                    text="📄 合同"
+                    prefWidth="200"
+                    onAction="#queryContracts"
+                    style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-cursor: hand;" />
+
+            <Button fx:id="performanceButton"
+                    text="📈 业绩"
+                    prefWidth="200"
+                    onAction="#queryPerformance"
+                    style="-fx-background-color: #6610f2; -fx-text-fill: white; -fx-cursor: hand;" />
+        </VBox>
+    </left>
+
+    <!-- 中心内容 -->
+    <center>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <HBox spacing="10">
+                <Label text="状态：" />
+                <Label fx:id="statusLabel" text="" style="-fx-text-fill: #007bff;" />
+            </HBox>
+
+            <TableView fx:id="resultTable" style="-fx-table-cell-border-color: #ccc;">
+                <placeholder>
+                    <Label text="请点击左侧按钮进行查询" style="-fx-font-style: italic; -fx-text-fill: gray;" />
+                </placeholder>
+            </TableView>
+        </VBox>
+    </center>
+
+    <!-- 底部状态栏 -->
+    <bottom>
+        <HBox alignment="CENTER"
+              style="-fx-background-color: #e9ecef; -fx-padding: 10;">
+            <Label text="© 2025 导游管理系统" style="-fx-text-fill: #6c757d;" />
+        </HBox>
+    </bottom>
+</BorderPane>

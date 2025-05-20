@@ -1,0 +1,11 @@
+.root {
+    -fx-background-color: #333;
+    -fx-font-family: "Arial";
+}
+.button {
+    -fx-background-color: #666;
+    -fx-text-fill: white;
+}
+.table-view {
+    -fx-background-color: #444;
+}
