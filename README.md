@@ -1,4 +1,4 @@
-## 数据库实验
+## **旅游公司数据库设计**
 
 ---
 
@@ -26,6 +26,7 @@
     - 系统 → 财务审计员：分类账、总账报表。
 
 **1级DFD**：
+
 - **子流程**：
     1. 管理员工数据（存储导游/经理信息）。
     2. 管理旅游线路（维护线路、景点、时间段等）。
@@ -293,6 +294,9 @@
 
 #### **SQL建表**
 以下为主要表的SQL定义：
+
+建表.sql
+
 ```sql
 -- 员工 (暂不加对分公司的外键)
 CREATE TABLE 员工 (
@@ -393,24 +397,139 @@ CREATE TABLE 财务账目 (
                           金额 DECIMAL(10,2)
 );
 
+CREATE TABLE 导游用户 (
+                          导游ID VARCHAR(10) PRIMARY KEY,
+                          密码哈希 VARCHAR(60) NOT NULL,
+                          FOREIGN KEY (导游ID) REFERENCES 员工(导游号)
+);
 ```
 
 #### **实验数据**
 - **小表**（如分公司、员工、线路）：插入10+行。
-- **大表**（如旅游信息、合同、旅游团_客户、财务账目）：插入1000+行。
-  以下为示例插入（以分公司和旅游信息为例）：
-```sql
--- 分公司
-INSERT INTO 分公司 VALUES
-                       ('B001', '上海分公司', '上海市徐汇区', 'G001'),
-                       ('B002', '北京分公司', '北京市朝阳区', 'G002'),
--- ... 共10行
 
--- 旅游信息（1000行示例，实际用脚本生成）
-    INSERT INTO 旅游信息 VALUES
-    ('T0001', 'C0001', 'L0001', '2025-06-01', 5000.00, '意外险', '标准', 'CT0001'),
-                             ('T0002', 'C0002', 'L0002', '2025-06-02', 8000.00, '医疗险', '豪华', 'CT0002'),
--- ... 共1000行
+- **大表**（如旅游信息、合同、旅游团_客户、财务账目）：插入1000+行。
+
+  模拟数据.sql
+```sql
+USE tourism_db;
+
+INSERT INTO 员工 (导游号, 身份证号, 姓名, 导游资格等级)
+VALUES
+    ('G001', '110101199003072516', '张伟', '高级'),
+    ('G002', '110101198504123456', '王芳', '中级'),
+    ('G003', '110101199206154321', '李娜', '初级'),
+    ('G004', '110101198809221234', '赵强', '高级'),
+    ('G005', '110101199312111111', '孙丽', '中级');
+
+INSERT INTO 分公司 (分公司ID, 名称, 办公地址, 经理ID)
+VALUES
+    ('B001', '北京分公司', '北京市朝阳区建国路88号', 'G001'),
+    ('B002', '上海分公司', '上海市浦东新区世纪大道100号', 'G002'),
+    ('B003', '广州分公司', '广州市天河区珠江新城华夏路23号', 'G003'),
+    ('B004', '成都分公司', '成都市武侯区人民南路四段55号', 'G004'),
+    ('B005', '武汉分公司', '武汉市江汉区解放大道688号', 'G005');
+
+UPDATE 员工 SET 分公司ID = 'B001' WHERE 导游号 = 'G001';
+UPDATE 员工 SET 分公司ID = 'B002' WHERE 导游号 = 'G002';
+UPDATE 员工 SET 分公司ID = 'B003' WHERE 导游号 = 'G003';
+UPDATE 员工 SET 分公司ID = 'B001' WHERE 导游号 = 'G004';
+UPDATE 员工 SET 分公司ID = 'B002' WHERE 导游号 = 'G005';
+
+
+INSERT INTO 旅游线路 (线路ID, 地点, 景点, 时间段, 价格, 交通方式, 服务等级)
+VALUES
+    ('T001', '北京-天津', '故宫、长城、五大道', '3天2晚', 1500.00, '大巴', '标准'),
+    ('T002', '上海-杭州', '外滩、西湖、灵隐寺', '4天3晚', 2200.00, '高铁', '高级'),
+    ('T003', '成都-重庆', '宽窄巷子、磁器口、洪崖洞', '5天4晚', 1800.00, '飞机+大巴', '豪华'),
+    ('T004', '广州-深圳', '白云山、世界之窗、欢乐谷', '2天1晚', 1000.00, '大巴', '标准'),
+    ('T005', '武汉-长沙', '黄鹤楼、橘子洲头、岳麓山', '3天2晚', 1300.00, '高铁', '高级');
+
+INSERT INTO 客户 (客户ID, 身份证号, 姓名, 工作单位, 职业)
+VALUES
+    ('C001', '110101198001011234', '刘洋', '腾讯科技有限公司', '软件工程师'),
+    ('C002', '110101198202022345', '陈静', '阿里巴巴集团', '产品经理'),
+    ('C003', '110101199003033456', '周杰', '华为技术有限公司', '网络工程师'),
+    ('C004', '110101198504044567', '吴婷', '工商银行', '银行职员'),
+    ('C005', '110101198805055678', '黄磊', '京东商城', '市场经理');
+
+INSERT INTO 合同 (合同ID, 版本号, 线路ID, 导游ID, 服务等级, 保险信息, 费用约定, 旅游时间)
+VALUES
+    ('CT001', 'v1.0', 'T001', 'G001', '标准', '平安保险', 1500.00, '2024-06-10'),
+    ('CT002', 'v1.1', 'T002', 'G002', '高级', '太平洋保险', 2200.00, '2024-07-15'),
+    ('CT003', 'v1.0', 'T003', 'G003', '高级', '人保财险', 1800.00, '2024-08-20'),
+    ('CT004', 'v1.2', 'T004', 'G004', '标准', '平安保险', 1000.00, '2024-09-10'),
+    ('CT005', 'v1.0', 'T005', 'G005', '中级', '人寿保险', 1300.00, '2024-10-05');
+
+INSERT INTO 旅游信息 (旅游ID, 客户ID, 线路ID, 旅游时间, 费用, 保险, 服务等级, 合同ID)
+VALUES
+    ('TR001', 'C001', 'T001', '2024-06-10', 1500.00, '平安保险', '标准', 'CT001'),
+    ('TR002', 'C002', 'T002', '2024-07-15', 2200.00, '太平洋保险', '高级', 'CT002'),
+    ('TR003', 'C003', 'T003', '2024-08-20', 1800.00, '人保财险', '豪华', 'CT003'),
+    ('TR004', 'C004', 'T004', '2024-09-10', 1000.00, '平安保险', '标准', 'CT004'),
+    ('TR005', 'C005', 'T005', '2024-10-05', 1300.00, '人寿保险', '高级', 'CT005');
+
+INSERT INTO 旅游团 (旅游团ID, 导游ID, 线路ID, 旅游时间)
+VALUES
+    ('TG001', 'G001', 'T001', '2024-06-10'),
+    ('TG002', 'G002', 'T002', '2024-07-15'),
+    ('TG003', 'G003', 'T003', '2024-08-20'),
+    ('TG004', 'G004', 'T004', '2024-09-10'),
+    ('TG005', 'G005', 'T005', '2024-10-05');
+
+INSERT INTO 旅游团_客户 (旅游团ID, 客户ID)
+VALUES
+    ('TG001', 'C001'),
+    ('TG001', 'C002'),
+    ('TG002', 'C003'),
+    ('TG002', 'C004'),
+    ('TG003', 'C005'),
+    ('TG004', 'C001'),
+    ('TG004', 'C002'),
+    ('TG005', 'C003');
+
+INSERT INTO 财务账目 (账目ID, 类型, 统计月份, 关联ID, 金额)
+VALUES
+    ('F001', '分类账', '2024-05-01', 'T001', 15000.00),
+    ('F002', '总账', '2024-05-01', 'B001', 45000.00),
+    ('F003', '分类账', '2024-05-01', 'T002', 22000.00),
+    ('F004', '总账', '2024-05-01', 'B002', 30000.00),
+    ('F005', '分类账', '2024-05-01', 'T003', 18000.00);
+
+INSERT INTO 财务账目 (账目ID, 类型, 统计月份, 关联ID, 金额) VALUES
+                                                                -- 分类账 - 线路
+                                                                ('F010', '分类账', '2024-05-01', 'T001', 15000.00),
+                                                                ('F011', '分类账', '2024-05-01', 'T002', 22000.00),
+                                                                ('F012', '分类账', '2024-05-01', 'T003', 18000.00),
+                                                                ('F013', '分类账', '2024-05-01', 'T004', 10000.00),
+                                                                ('F014', '分类账', '2024-05-01', 'T005', 13000.00),
+
+                                                                -- 总账 - 分公司
+                                                                ('F020', '总账', '2024-05-01', 'B001', 45000.00),
+                                                                ('F021', '总账', '2024-05-01', 'B002', 30000.00),
+                                                                ('F022', '总账', '2024-05-01', 'B003', 35000.00),
+                                                                ('F023', '总账', '2024-05-01', 'B004', 28000.00),
+                                                                ('F024', '总账', '2024-05-01', 'B005', 22000.00),
+
+                                                                -- 分类账 - 导游业绩
+                                                                ('F030', '分类账', '2024-05-01', 'G001', 5000.00),
+                                                                ('F031', '分类账', '2024-05-01', 'G002', 4500.00),
+                                                                ('F032', '分类账', '2024-05-01', 'G003', 4000.00),
+                                                                ('F033', '分类账', '2024-05-01', 'G004', 3500.00),
+                                                                ('F034', '分类账', '2024-05-01', 'G005', 3000.00),
+
+                                                                -- 分类账 - 客户消费
+                                                                ('F040', '分类账', '2024-05-01', 'C001', 1500.00),
+                                                                ('F041', '分类账', '2024-05-01', 'C002', 2200.00),
+                                                                ('F042', '分类账', '2024-05-01', 'C003', 1800.00),
+                                                                ('F043', '分类账', '2024-05-01', 'C004', 1000.00),
+                                                                ('F044', '分类账', '2024-05-01', 'C005', 1300.00),
+
+                                                                -- 跨月数据
+                                                                ('F050', '分类账', '2024-06-01', 'T001', 16000.00),
+                                                                ('F051', '分类账', '2024-06-01', 'G001', 5500.00),
+                                                                ('F052', '分类账', '2024-06-01', 'C001', 1700.00),
+                                                                ('F053', '总账', '2024-06-01', 'B001', 40000.00);
+
 ```
 **生成大表数据**：
 
@@ -451,44 +570,59 @@ conn.close()
 #### **分类账**
 - **线路收入**：
 ```sql
-SELECT 线路ID, 统计月份, SUM(金额) as 收入
+SELECT
+    关联ID AS 线路ID,
+    统计月份,
+    SUM(金额) as 线路收入
 FROM 财务账目
 WHERE 类型 = '分类账' AND 关联ID IN (SELECT 线路ID FROM 旅游线路)
-GROUP BY 线路ID, 统计月份;
+GROUP BY 关联ID, 统计月份;
 ```
 - **客户消费**：
 ```sql
-SELECT 客户ID, 统计月份, SUM(费用) as 消费金额
-FROM 旅游信息
-         JOIN 财务账目 ON 旅游信息.旅游ID = 财务账目.关联ID
-WHERE 财务账目.类型 = '分类账'
+SELECT
+    客户ID,
+    统计月份,
+    SUM(费用) as 消费金额
+FROM 旅游信息 t
+         JOIN 财务账目 f ON t.旅游ID = f.关联ID
+WHERE f.类型 = '分类账'
 GROUP BY 客户ID, 统计月份;
 ```
 - **导游业绩**：
 ```sql
-SELECT 导游ID, 统计月份, SUM(金额) as 业绩金额
+SELECT
+    关联ID AS 导游ID,
+    统计月份,
+    SUM(金额) AS 业绩金额
 FROM 财务账目
 WHERE 类型 = '分类账' AND 关联ID IN (SELECT 导游号 FROM 员工)
-GROUP BY 导游ID, 统计月份;
+GROUP BY 关联ID, 统计月份;
 ```
 
 #### **总账**
 - **分公司销售业绩**：
 ```sql
-SELECT 分公司ID, 统计月份, SUM(金额) as 销售业绩
+SELECT
+    关联ID AS 分公司ID,
+    统计月份,
+    SUM(金额) as 业绩金额
 FROM 财务账目
 WHERE 类型 = '总账' AND 关联ID IN (SELECT 分公司ID FROM 分公司)
-GROUP BY 分公司ID, 统计月份;
+GROUP BY 关联ID, 统计月份;
 ```
 
 #### **实现**
 - 创建视图存储统计结果：
 ```sql
 CREATE VIEW 线路收入视图 AS
-SELECT 线路ID, 统计月份, SUM(金额) as 收入
+SELECT
+    关联ID AS 线路ID,
+    统计月份,
+    SUM(金额) as 线路收入
 FROM 财务账目
 WHERE 类型 = '分类账' AND 关联ID IN (SELECT 线路ID FROM 旅游线路)
-GROUP BY 线路ID, 统计月份;
+GROUP BY 关联ID, 统计月份;
 ```
 - 每月运行脚本更新财务账目表，确保数据准确。
 
@@ -508,7 +642,7 @@ GROUP BY 线路ID, 统计月份;
 
 ```sql
 CREATE VIEW 导游个人信息视图 AS
-SELECT
+SELECT 
     e.导游号 AS 导游ID,
     e.姓名 AS 导游姓名,
     e.导游资格等级 AS 资格等级,
@@ -517,7 +651,7 @@ SELECT
     b.名称 AS 分公司名称,
     b.办公地址 AS 分公司地址
 FROM 员工 e
-         JOIN 分公司 b ON e.分公司ID = b.分公司ID;
+JOIN 分公司 b ON e.分公司ID = b.分公司ID;
 ```
 
 - **用途**：允许导游查看自己的个人信息和所属分公司详情。
@@ -533,7 +667,7 @@ SELECT * FROM 导游个人信息视图 WHERE 导游ID = 'G001';
 
 ```sql
 CREATE VIEW 导游旅游团视图 AS
-SELECT
+SELECT 
     t.旅游团ID AS 旅游团ID,
     t.导游ID AS 导游ID,
     t.线路ID AS 线路ID,
@@ -543,7 +677,7 @@ SELECT
     l.服务等级 AS 服务等级,
     l.价格 AS 价格
 FROM 旅游团 t
-         JOIN 旅游线路 l ON t.线路ID = l.线路ID;
+JOIN 旅游线路 l ON t.线路ID = l.线路ID;
 ```
 
 - **用途**：帮助导游查看自己负责的旅游团，包括线路的地点、景点、时间等。
@@ -559,7 +693,7 @@ SELECT * FROM 导游旅游团视图 WHERE 导游ID = 'G001' AND 旅游日期 >= 
 
 ```sql
 CREATE VIEW 导游客户视图 AS
-SELECT
+SELECT 
     t.旅游团ID AS 旅游团ID,
     t.导游ID AS 导游ID,
     tc.客户ID AS 客户ID,
@@ -567,8 +701,8 @@ SELECT
     c.身份证号 AS 客户身份证号,
     c.职业 AS 客户职业
 FROM 旅游团 t
-         JOIN 旅游团_客户 tc ON t.旅游团ID = tc.旅游团ID
-         JOIN 客户 c ON tc.客户ID = c.客户ID;
+JOIN 旅游团_客户 tc ON t.旅游团ID = tc.旅游团ID
+JOIN 客户 c ON tc.客户ID = c.客户ID;
 ```
 
 - **用途**：允许导游查看每个旅游团的客户列表，便于管理团队。
@@ -584,7 +718,7 @@ SELECT * FROM 导游客户视图 WHERE 导游ID = 'G001' AND 旅游团ID = 'TG00
 
 ```sql
 CREATE VIEW 导游合同视图 AS
-SELECT
+SELECT 
     c.合同ID AS 合同ID,
     c.导游ID AS 导游ID,
     c.线路ID AS 线路ID,
@@ -594,7 +728,7 @@ SELECT
     c.费用约定 AS 费用,
     c.旅游时间 AS 旅游时间
 FROM 合同 c
-         JOIN 旅游线路 l ON c.线路ID = l.线路ID;
+JOIN 旅游线路 l ON c.线路ID = l.线路ID;
 ```
 
 - **用途**：导游可以查看自己负责的合同详情，包括费用、服务等级和保险信息。
@@ -611,12 +745,12 @@ SELECT * FROM 导游合同视图 WHERE 导游ID = 'G001' AND 旅游时间 BETWEE
 ```sql
 CREATE VIEW 导游业绩视图 AS
 SELECT
-    f.关联ID AS 导游ID,
-    f.统计月份 AS 统计月份,
-    SUM(f.金额) AS 业绩金额
-FROM 财务账目 f
-WHERE f.类型 = '分类账' AND f.关联ID IN (SELECT 导游号 FROM 员工)
-GROUP BY f.关联ID, f.统计月份;
+    关联ID AS 导游ID,
+    统计月份,
+    SUM(金额) AS 业绩金额
+FROM 财务账目
+WHERE 类型 = '分类账' AND 关联ID IN (SELECT 导游号 FROM 员工)
+GROUP BY 关联ID, 统计月份;
 ```
 
 - **用途**：导游可以查看自己的月度业绩，了解收入贡献。
@@ -635,16 +769,16 @@ SELECT * FROM 导游业绩视图 WHERE 导游ID = 'G001' AND 统计月份 = '202
 ```sql
 SELECT 旅游团ID, 线路ID, 地点, 景点, 旅游日期, 服务等级
 FROM 导游旅游团视图
-WHERE 导游ID = 'G001'
-  AND 旅游日期 BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 MONTH);
+WHERE 导游ID = 'G001' 
+AND 旅游日期 BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 MONTH);
 ```
 
 2. **查询某旅游团的客户和合同信息**：
 ```sql
 SELECT g.旅游团ID, g.客户ID, g.客户姓名, c.合同ID, c.费用, c.保险信息
 FROM 导游客户视图 g
-         JOIN 旅游信息 ti ON g.客户ID = ti.客户ID
-         JOIN 导游合同视图 c ON ti.合同ID = c.合同ID
+JOIN 旅游信息 ti ON g.客户ID = ti.客户ID
+JOIN 导游合同视图 c ON ti.合同ID = c.合同ID
 WHERE g.导游ID = 'G001' AND g.旅游团ID = 'TG001';
 ```
 
@@ -660,7 +794,8 @@ ORDER BY 统计月份;
 为确保数据安全，建议为每位导游分配数据库用户账户，并限制视图访问权限：
 ```sql
 -- 创建导游用户
-CREATE USER 'guide_G001'@'localhost' IDENTIFIED BY 'password';
+CREATE USER 'guide_G001'@'localhost' IDENTIFIED BY 'G001';
+CREATE USER 'guide_G002'@'localhost' IDENTIFIED BY 'G002';
 
 -- 授予视图查询权限
 GRANT SELECT ON tourism_db.导游个人信息视图 TO 'guide_G001'@'localhost';
@@ -668,6 +803,86 @@ GRANT SELECT ON tourism_db.导游旅游团视图 TO 'guide_G001'@'localhost';
 GRANT SELECT ON tourism_db.导游客户视图 TO 'guide_G001'@'localhost';
 GRANT SELECT ON tourism_db.导游合同视图 TO 'guide_G001'@'localhost';
 GRANT SELECT ON tourism_db.导游业绩视图 TO 'guide_G001'@'localhost';
+GRANT SELECT ON tourism_db.分公司业绩视图 TO 'guide_G001'@'localhost';
+GRANT SELECT ON tourism_db.客户消费视图 TO 'guide_G001'@'localhost';
+GRANT SELECT ON tourism_db.线路收入视图 TO 'guide_G001'@'localhost';
+
+GRANT SELECT ON tourism_db.导游个人信息视图 TO 'guide_G002'@'localhost';
+GRANT SELECT ON tourism_db.导游旅游团视图 TO 'guide_G002'@'localhost';
+GRANT SELECT ON tourism_db.导游客户视图 TO 'guide_G002'@'localhost';
+GRANT SELECT ON tourism_db.导游合同视图 TO 'guide_G002'@'localhost';
+GRANT SELECT ON tourism_db.导游业绩视图 TO 'guide_G002'@'localhost';
+
+GRANT SELECT ON `tourism_db`.`员工` TO 'guide_G001'@'localhost';
+GRANT SELECT ON `tourism_db`.`员工` TO 'guide_G002'@'localhost';
+
+-- 分公司
+GRANT SELECT ON tourism_db.分公司 TO 'guide_G001'@'localhost';
+
+-- 合同
+GRANT SELECT ON tourism_db.合同 TO 'guide_G001'@'localhost';
+
+-- 员工
+GRANT SELECT ON tourism_db.员工 TO 'guide_G001'@'localhost';
+
+-- 客户
+GRANT SELECT ON tourism_db.客户 TO 'guide_G001'@'localhost';
+
+-- 导游用户
+GRANT SELECT ON tourism_db.导游用户 TO 'guide_G001'@'localhost';
+
+-- 旅游信息
+GRANT SELECT ON tourism_db.旅游信息 TO 'guide_G001'@'localhost';
+
+-- 旅游团
+GRANT SELECT ON tourism_db.旅游团 TO 'guide_G001'@'localhost';
+
+-- 旅游团_客户
+GRANT SELECT ON tourism_db.旅游团_客户 TO 'guide_G001'@'localhost';
+
+-- 旅游线路
+GRANT SELECT ON tourism_db.旅游线路 TO 'guide_G001'@'localhost';
+
+-- 财务账目
+GRANT SELECT ON tourism_db.财务账目 TO 'guide_G001'@'localhost';
+
+-- 刷新权限
+FLUSH PRIVILEGES;
+
+-- 分公司
+GRANT SELECT ON tourism_db.分公司 TO 'guide_G002'@'localhost';
+
+-- 合同
+GRANT SELECT ON tourism_db.合同 TO 'guide_G002'@'localhost';
+
+-- 员工
+GRANT SELECT ON tourism_db.员工 TO 'guide_G002'@'localhost';
+
+-- 客户
+GRANT SELECT ON tourism_db.客户 TO 'guide_G002'@'localhost';
+
+-- 导游用户
+GRANT SELECT ON tourism_db.导游用户 TO 'guide_G002'@'localhost';
+
+-- 旅游信息
+GRANT SELECT ON tourism_db.旅游信息 TO 'guide_G002'@'localhost';
+
+-- 旅游团
+GRANT SELECT ON tourism_db.旅游团 TO 'guide_G002'@'localhost';
+
+-- 旅游团_客户
+GRANT SELECT ON tourism_db.旅游团_客户 TO 'guide_G002'@'localhost';
+
+-- 旅游线路
+GRANT SELECT ON tourism_db.旅游线路 TO 'guide_G002'@'localhost';
+
+-- 财务账目
+GRANT SELECT ON tourism_db.财务账目 TO 'guide_G002'@'localhost';
+
+-- 刷新权限
+FLUSH PRIVILEGES;
+
+GRANT SELECT ON tourism_db.* TO 'guide_G001'@'localhost';
 ```
 
 
@@ -688,7 +903,7 @@ GRANT SELECT ON tourism_db.导游业绩视图 TO 'guide_G001'@'localhost';
 
 - **依赖管理**：Maven（简化库管理）。
 
-- **开发环境**：IntelliJ IDEA 或 Eclipse。
+- **开发环境**：IntelliJ IDEA 。
 
 - **附加库**：
     - JavaFX（UI框架）。
@@ -810,6 +1025,7 @@ Tour-guide-query-interface/
           requires org.apache.commons.csv;
           requires jbcrypt;
           requires com.zaxxer.hikari;
+          requires mysql.connector.java;
           opens com.yyc.TourGuideQueryInterface to javafx.fxml;
           exports com.yyc.TourGuideQueryInterface;
       }
@@ -831,44 +1047,34 @@ Tour-guide-query-interface/
 
 
 
-##### 2. 优化后的JDBC连接
-
-使用连接池（HikariCP）提高性能，添加错误处理和配置外部化。
+##### 2. JDBC连接
 DatabaseConnection.java
 
 ```java
 package com.yyc.TourGuideQueryInterface;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static final HikariDataSource dataSource;
+
+    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/tourism_db";
 
     static {
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://localhost:3306/tourism_db");
-        config.setUsername("root");
-        config.setPassword("123456");
-        config.setMaximumPoolSize(10);
-        config.setMinimumIdle(5);
-        config.addDataSourceProperty("cachePrepStmts", "true");
-        dataSource = new HikariDataSource(config);
-    }
-
-    public static Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
-    }
-
-    public static void close() {
-        if (dataSource != null) {
-            dataSource.close();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("MySQL JDBC Driver not found", e);
         }
     }
+
+    // 根据用户名和密码创建数据库连接
+    public static Connection getConnection(String username, String password) throws SQLException {
+        return DriverManager.getConnection(JDBC_URL, username, password);
+    }
 }
+
 ```
 
 
@@ -949,17 +1155,36 @@ public class DatabaseConnection {
                     onAction="#queryClients"
                     style="-fx-background-color: #ffc107; -fx-text-fill: black; -fx-cursor: hand;" />
 
+            <Button fx:id="clientConsumptionButton"
+                    text="&#x1F4B0; 客户消费"
+                    prefWidth="200"
+                    onAction="#queryClientConsumption"
+                    style="-fx-background-color: #20c997; -fx-text-fill: white; -fx-cursor: hand;" />
+
+
             <Button fx:id="contractButton"
-                    text="📄 合同"
+                    text="&#x1F4DA; 合同"
                     prefWidth="200"
                     onAction="#queryContracts"
                     style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-cursor: hand;" />
 
             <Button fx:id="performanceButton"
-                    text="📈 业绩"
+                    text="📈 个人业绩"
                     prefWidth="200"
                     onAction="#queryPerformance"
                     style="-fx-background-color: #6610f2; -fx-text-fill: white; -fx-cursor: hand;" />
+
+            <Button fx:id="routeIncomeButton"
+                    text="💰 线路业绩"
+                    prefWidth="200"
+                    onAction="#queryRouteIncome"
+                    style="-fx-background-color: #6f42c1; -fx-text-fill: white; -fx-cursor: hand;" />
+
+            <Button fx:id="branchPerformanceButton"
+                    text="🏢 分公司业绩"
+                    prefWidth="200"
+                    onAction="#queryBranchPerformance"
+                    style="-fx-background-color: #fd7e14; -fx-text-fill: white; -fx-cursor: hand;" />
         </VBox>
     </left>
 
@@ -987,7 +1212,6 @@ public class DatabaseConnection {
         </HBox>
     </bottom>
 </BorderPane>
-
 ```
 
 **登录界面FXML**（`login.fxml`）：
@@ -1031,7 +1255,6 @@ public class DatabaseConnection {
 
             <!-- 错误提示 -->
             <Label fx:id="errorLabel"
-                   text=""
                    style="-fx-text-fill: red; -fx-font-size: 14px;"
                    prefHeight="20" />
         </VBox>
@@ -1064,7 +1287,13 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.io.FileWriter;
+import java.io.BufferedOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -1075,7 +1304,7 @@ import java.util.Map;
 public class GuideModel {
     // 验证导游登录
     public boolean authenticate(String guideId, String password) throws SQLException {
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection(guideId, password);
              PreparedStatement stmt = conn.prepareStatement("SELECT 密码哈希 FROM 导游用户 WHERE 导游ID = ?")) {
 
             stmt.setString(1, guideId);
@@ -1089,24 +1318,47 @@ public class GuideModel {
     }
 
     // 通用查询方法（支持日期过滤）
-    public List<Map<String, Object>> query(String viewName, String guideId, LocalDate startDate, LocalDate endDate) throws SQLException {
+    public List<Map<String, Object>> query(String viewName, String guideId, Connection conn, LocalDate startDate, LocalDate endDate) throws SQLException {
         // 白名单校验视图名称
         if (!isValidViewName(viewName)) {
             throw new IllegalArgumentException("不允许查询的视图: " + viewName);
         }
 
-        StringBuilder sql = new StringBuilder("SELECT * FROM ").append(viewName).append(" WHERE 导游ID = ?");
-        if (startDate != null && endDate != null) {
-            sql.append(" AND 旅游日期 BETWEEN ? AND ?");
+        StringBuilder sql = new StringBuilder("SELECT * FROM ").append(viewName);
+
+        // 判断是否需要添加导游ID条件
+        boolean needsGuideId = List.of(
+                "导游个人信息视图",
+                "导游旅游团视图",
+                "导游客户视图",
+                "导游合同视图",
+                "导游业绩视图"
+        ).contains(viewName);
+
+        // 构建 WHERE 子句
+        if (needsGuideId) {
+            sql.append(" WHERE 导游ID = ?");
         }
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+        // 添加时间范围
+        if (startDate != null && endDate != null) {
+            if (needsGuideId) {
+                sql.append(" AND 统计月份 BETWEEN ? AND ?");
+            } else {
+                sql.append(" WHERE 统计月份 BETWEEN ? AND ?");
+            }
+        }
 
-            stmt.setString(1, guideId);
+        try (PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+
+            if (needsGuideId) {
+                stmt.setString(paramIndex++, guideId);
+            }
+
             if (startDate != null && endDate != null) {
-                stmt.setDate(2, Date.valueOf(startDate));
-                stmt.setDate(3, Date.valueOf(endDate));
+                stmt.setDate(paramIndex++, Date.valueOf(startDate));
+                stmt.setDate(paramIndex, Date.valueOf(endDate));
             }
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -1127,9 +1379,12 @@ public class GuideModel {
         }
     }
 
+
+
     // 白名单验证方法
     private boolean isValidViewName(String viewName) {
-        List<String> allowedViews = List.of("导游业绩视图", "导游个人信息视图", "导游合同视图", "导游客户视图", "导游旅游团视图"); // 允许的视图列表
+        List<String> allowedViews = List.of("导游业绩视图", "导游个人信息视图"
+                , "导游合同视图", "导游客户视图", "导游旅游团视图", "分公司业绩视图", "客户消费视图", "线路收入视图"); // 允许的视图列表
         return allowedViews.contains(viewName);
     }
 
@@ -1142,7 +1397,18 @@ public class GuideModel {
 
         List<String> headers = new ArrayList<>(data.get(0).keySet());
 
-        try (CSVPrinter printer = new CSVPrinter(new FileWriter(filePath), CSVFormat.DEFAULT.withHeader(headers.toArray(new String[0])))) {
+        Path path = Paths.get(filePath);
+
+        try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(path));
+             CSVPrinter printer = new CSVPrinter(
+                     new OutputStreamWriter(out, StandardCharsets.UTF_8), // 使用 UTF-8
+                     CSVFormat.DEFAULT.builder()
+                             .setHeader(headers.toArray(new String[0]))
+                             .build())) {
+
+            // 写入 UTF-8 BOM（必须放在 writer 创建之前）
+            out.write(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF });
+
             for (Map<String, Object> row : data) {
                 List<Object> rowData = new ArrayList<>();
                 for (String col : headers) {
@@ -1152,6 +1418,7 @@ public class GuideModel {
             }
         }
     }
+
 }
 
 ```
@@ -1170,6 +1437,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.logging.Logger;
 
 public class LoginController {
@@ -1183,31 +1455,46 @@ public class LoginController {
     @FXML
     private Label errorLabel;
 
-    private final GuideModel model = new GuideModel();
-
     @FXML
     private void handleLogin() {
         String guideId = guideIdField.getText();
         String password = passwordField.getText();
 
         try {
-            if (model.authenticate(guideId, password)) {
-                // 加载主界面
+            // 构造数据库用户名：guide_导游ID
+            String dbUsername = "guide_" + guideId;
+
+            // 使用该账号尝试连接数据库（验证是否存在且权限正确）
+            Connection conn = DatabaseConnection.getConnection(dbUsername, password);
+
+            if (isAuthenticationSuccessful(conn, guideId)) {
+                // 登录成功，跳转主界面
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/yyc/TourGuideQueryInterface/main.fxml"));
                 Parent root = loader.load();
                 MainController mainController = loader.getController();
-                mainController.setGuideId(guideId);
+                mainController.setGuideId(guideId, password);
 
                 Stage stage = (Stage) guideIdField.getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.setTitle("导游查询系统 - 主界面");
             } else {
-                logger.warning("登录失败：导游ID或密码错误");
-                errorLabel.setText("导游ID或密码错误！");
+                errorLabel.setText("认证失败，请重试");
             }
+
+        } catch (SQLException e) {
+            logger.severe("数据库连接失败：" + e.getMessage());
+            errorLabel.setText("数据库连接失败，请检查网络或账号密码");
         } catch (Exception e) {
-            logger.severe("登录过程中发生异常: " + e.getMessage());
-            errorLabel.setText("登录失败：" + e.getMessage());        }
+            logger.severe("登录过程中发生异常：" + e.getMessage());
+            errorLabel.setText("登录失败：" + e.getMessage());
+        }
+    }
+
+    // 验证导游ID是否真实存在
+    private boolean isAuthenticationSuccessful(Connection conn, String guideId) throws SQLException {
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT 1 FROM 员工 WHERE 导游号 = '" + guideId + "'")) {
+            return rs.next();
+        }
     }
 }
 ```
@@ -1224,6 +1511,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -1245,6 +1534,12 @@ public class MainController {
     @FXML
     public Button performanceButton;
     @FXML
+    public Button clientConsumptionButton;
+    @FXML
+    public Button routeIncomeButton;
+    @FXML
+    public Button branchPerformanceButton;
+    @FXML
     private TableView<Map<String, Object>> resultTable;
     @FXML
     private DatePicker startDatePicker;
@@ -1258,6 +1553,32 @@ public class MainController {
     private Label statusLabel;
 
     private String guideId;
+    private Connection userConnection;
+
+    public void setGuideId(String guideId, String password) {
+        this.guideId = guideId;
+
+        try {
+            String dbUsername = "guide_" + guideId;
+            this.userConnection = DatabaseConnection.getConnection(dbUsername, password);
+        } catch (SQLException e) {
+            // 处理连接失败
+            // 使用日志记录器记录异常信息
+            logger.severe("数据库连接失败: " + e.getMessage());
+            logger.throwing(MainController.class.getName(), "setGuideId", e);
+            showAlert();
+        }
+    }
+
+    private void showAlert() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("连接失败");
+        alert.setHeaderText(null);
+        alert.setContentText("无法连接到数据库，请检查账号权限");
+        alert.showAndWait();
+    }
+
+
     private final GuideModel model = new GuideModel();
 
     @FXML
@@ -1268,10 +1589,6 @@ public class MainController {
 
         // 导出按钮
         exportButton.setOnAction(e -> exportToCSV());
-    }
-
-    public void setGuideId(String guideId) {
-        this.guideId = guideId;
     }
 
     @FXML
@@ -1299,9 +1616,27 @@ public class MainController {
         query("导游业绩视图", startDatePicker.getValue(), endDatePicker.getValue());
     }
 
+    @FXML
+    private void queryBranchPerformance() {
+        query("分公司业绩视图", startDatePicker.getValue(), endDatePicker.getValue());
+    }
+
+    @FXML
+    private void queryClientConsumption() {
+        query("客户消费视图", startDatePicker.getValue(), endDatePicker.getValue());
+    }
+
+    @FXML
+    private void queryRouteIncome() {
+        query("线路收入视图", startDatePicker.getValue(), endDatePicker.getValue());
+    }
+
+    private String currentViewName;
+
     private void query(String viewName, LocalDate startDate, LocalDate endDate) {
+        this.currentViewName = viewName;
         try {
-            List<Map<String, Object>> data = model.query(viewName, guideId, startDate, endDate);
+            List<Map<String, Object>> data = model.query(viewName, guideId, userConnection, startDate, endDate);
 
             resultTable.getColumns().clear();
             resultTable.getItems().clear();
@@ -1324,15 +1659,27 @@ public class MainController {
                 statusLabel.setText("没有找到符合条件的数据");
             }
         } catch (Exception e) {
-            statusLabel.setText("查询失败：" + e.getMessage());
-            logger.severe("查询过程中发生异常: " + e.getMessage());  // 替换为日志记录
-            logger.throwing(MainController.class.getName(), "query", e); // 可选：记录异常堆栈
+            String errorMessage = e.getMessage();
+
+            // 判断是否是权限相关错误（根据数据库驱动返回的信息判断）
+            if (errorMessage.contains("command denied") || errorMessage.contains("权限") || errorMessage.contains("SQLSyntaxErrorException")) {
+                statusLabel.setText("无权查看该视图");
+            } else {
+                statusLabel.setText("查询失败：" + e.getMessage());
+            }
+
+            logger.severe("查询过程中发生异常: " + e.getMessage());
+            logger.throwing(MainController.class.getName(), "query", e);
         }
     }
 
-
     @FXML
     private void exportToCSV() {
+        if (currentViewName == null || resultTable.getItems().isEmpty()) {
+            Platform.runLater(() -> statusLabel.setText("没有可导出的数据"));
+            return;
+        }
+
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("保存CSV文件");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV文件", "*.csv"));
@@ -1341,32 +1688,21 @@ public class MainController {
         if (file != null) {
             new Thread(() -> {
                 try {
-                    // 获取当前表格列名作为视图名称（或从上下文取）
-                    String viewName = resultTable.getColumns().get(0).getText();
-
-                    // 查询数据（改用 List<Map<String, Object>>）
                     List<Map<String, Object>> data = model.query(
-                            viewName,
+                            currentViewName,
                             guideId,
+                            userConnection,
                             startDatePicker.getValue(),
                             endDatePicker.getValue()
                     );
-
-                    // 导出为 CSV
                     model.exportToCSV(data, file.getAbsolutePath());
-
-                    // 更新 UI 状态
                     Platform.runLater(() -> statusLabel.setText("导出成功：" + file.getAbsolutePath()));
-
                 } catch (Exception e) {
                     Platform.runLater(() -> statusLabel.setText("导出失败：" + e.getMessage()));
-                    logger.warning("导出过程中发生异常: " + e.getMessage());  // 替换为日志记录
-                    logger.throwing(MainController.class.getName(), "exportToCSV", e); // 可选：记录异常堆栈
                 }
             }).start();
         }
     }
-
 
     @FXML
     private BorderPane mainPane;
@@ -1412,7 +1748,6 @@ public class TourGuideQueryInterface extends Application {
         launch(args);
     }
 }
-
 ```
 
 **CSS样式**（`light-theme.css` 和 `dark-theme.css` 示例）：
