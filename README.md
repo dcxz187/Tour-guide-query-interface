@@ -1091,6 +1091,11 @@ public class DatabaseConnection {
 
 ##### 4. JavaFX界面设计
 
+<img width="302" alt="Snipaste_2025-05-21_23-54-53" src="https://github.com/user-attachments/assets/2d4cf262-a312-4315-aa42-613d913ed315" />
+
+<img width="548" alt="Snipaste_2025-05-21_23-55-03" src="https://github.com/user-attachments/assets/1d2b2c7f-08fa-404c-849a-405659b85814" />
+
+
 使用FXML定义界面布局，包含以下组件：
 - **登录界面**：导游ID输入框、密码输入框、登录按钮、主题切换下拉框。
 - **主界面**：
