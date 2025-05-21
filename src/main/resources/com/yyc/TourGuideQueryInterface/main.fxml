@@ -52,17 +52,36 @@
                     onAction="#queryClients"
                     style="-fx-background-color: #ffc107; -fx-text-fill: black; -fx-cursor: hand;" />
 
+            <Button fx:id="clientConsumptionButton"
+                    text="&#x1F4B0; 客户消费"
+                    prefWidth="200"
+                    onAction="#queryClientConsumption"
+                    style="-fx-background-color: #20c997; -fx-text-fill: white; -fx-cursor: hand;" />
+
+
             <Button fx:id="contractButton"
-                    text="📄 合同"
+                    text="&#x1F4DA; 合同"
                     prefWidth="200"
                     onAction="#queryContracts"
                     style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-cursor: hand;" />
 
             <Button fx:id="performanceButton"
-                    text="📈 业绩"
+                    text="📈 个人业绩"
                     prefWidth="200"
                     onAction="#queryPerformance"
                     style="-fx-background-color: #6610f2; -fx-text-fill: white; -fx-cursor: hand;" />
+
+            <Button fx:id="routeIncomeButton"
+                    text="💰 线路业绩"
+                    prefWidth="200"
+                    onAction="#queryRouteIncome"
+                    style="-fx-background-color: #6f42c1; -fx-text-fill: white; -fx-cursor: hand;" />
+
+            <Button fx:id="branchPerformanceButton"
+                    text="🏢 分公司业绩"
+                    prefWidth="200"
+                    onAction="#queryBranchPerformance"
+                    style="-fx-background-color: #fd7e14; -fx-text-fill: white; -fx-cursor: hand;" />
         </VBox>
     </left>
 

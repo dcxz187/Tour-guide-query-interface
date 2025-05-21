@@ -55,9 +55,40 @@ FROM 合同 c
 --  导游业绩视图
 CREATE VIEW 导游业绩视图 AS
 SELECT
-    f.关联ID AS 导游ID,
-    f.统计月份 AS 统计月份,
-    SUM(f.金额) AS 业绩金额
-FROM 财务账目 f
-WHERE f.类型 = '分类账' AND f.关联ID IN (SELECT 导游号 FROM 员工)
-GROUP BY f.关联ID, f.统计月份;
+    关联ID AS 导游ID,
+    统计月份,
+    SUM(金额) AS 业绩金额
+FROM 财务账目
+WHERE 类型 = '分类账' AND 关联ID IN (SELECT 导游号 FROM 员工)
+GROUP BY 关联ID, 统计月份;
+
+-- 线路收入视图
+CREATE VIEW 线路收入视图 AS
+SELECT
+    关联ID AS 线路ID,
+    统计月份,
+    SUM(金额) as 线路收入
+FROM 财务账目
+WHERE 类型 = '分类账' AND 关联ID IN (SELECT 线路ID FROM 旅游线路)
+GROUP BY 关联ID, 统计月份;
+
+-- 客户消费视图
+CREATE VIEW 客户消费视图 AS
+SELECT
+    客户ID,
+    统计月份,
+    SUM(费用) as 消费金额
+FROM 旅游信息 t
+         JOIN 财务账目 f ON t.客户ID = f.关联ID
+WHERE f.类型 = '分类账'
+GROUP BY 客户ID, 统计月份;
+
+-- 分公司业绩视图
+CREATE VIEW 分公司业绩视图 AS
+SELECT
+    关联ID AS 分公司ID,
+    统计月份,
+    SUM(金额) as 业绩金额
+FROM 财务账目
+WHERE 类型 = '总账' AND 关联ID IN (SELECT 分公司ID FROM 分公司)
+GROUP BY 关联ID, 统计月份;

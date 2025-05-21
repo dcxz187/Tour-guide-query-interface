@@ -1,32 +1,23 @@
 package com.yyc.TourGuideQueryInterface;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static final HikariDataSource dataSource;
+
+    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/tourism_db";
 
     static {
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://localhost:3306/tourism_db");
-        config.setUsername("root");
-        config.setPassword("*");
-        config.setMaximumPoolSize(10);
-        config.setMinimumIdle(5);
-        config.addDataSourceProperty("cachePrepStmts", "true");
-        dataSource = new HikariDataSource(config);
-    }
-
-    public static Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
-    }
-
-    public static void close() {
-        if (dataSource != null) {
-            dataSource.close();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("MySQL JDBC Driver not found", e);
         }
+    }
+
+    // 根据用户名和密码创建数据库连接
+    public static Connection getConnection(String username, String password) throws SQLException {
+        return DriverManager.getConnection(JDBC_URL, username, password);
     }
 }

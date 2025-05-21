@@ -5,6 +5,7 @@ module travel.system {
     requires org.apache.commons.csv;
     requires jbcrypt;
     requires com.zaxxer.hikari;
+    requires mysql.connector.java;
     opens com.yyc.TourGuideQueryInterface to javafx.fxml;
     exports com.yyc.TourGuideQueryInterface;
 }

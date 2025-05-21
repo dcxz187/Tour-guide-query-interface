@@ -8,6 +8,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,12 @@ public class MainController {
     @FXML
     public Button performanceButton;
     @FXML
+    public Button clientConsumptionButton;
+    @FXML
+    public Button routeIncomeButton;
+    @FXML
+    public Button branchPerformanceButton;
+    @FXML
     private TableView<Map<String, Object>> resultTable;
     @FXML
     private DatePicker startDatePicker;
@@ -42,6 +50,32 @@ public class MainController {
     private Label statusLabel;
 
     private String guideId;
+    private Connection userConnection;
+
+    public void setGuideId(String guideId, String password) {
+        this.guideId = guideId;
+
+        try {
+            String dbUsername = "guide_" + guideId;
+            this.userConnection = DatabaseConnection.getConnection(dbUsername, password);
+        } catch (SQLException e) {
+            // 处理连接失败
+            // 使用日志记录器记录异常信息
+            logger.severe("数据库连接失败: " + e.getMessage());
+            logger.throwing(MainController.class.getName(), "setGuideId", e);
+            showAlert();
+        }
+    }
+
+    private void showAlert() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("连接失败");
+        alert.setHeaderText(null);
+        alert.setContentText("无法连接到数据库，请检查账号权限");
+        alert.showAndWait();
+    }
+
+
     private final GuideModel model = new GuideModel();
 
     @FXML
@@ -52,10 +86,6 @@ public class MainController {
 
         // 导出按钮
         exportButton.setOnAction(e -> exportToCSV());
-    }
-
-    public void setGuideId(String guideId) {
-        this.guideId = guideId;
     }
 
     @FXML
@@ -83,9 +113,27 @@ public class MainController {
         query("导游业绩视图", startDatePicker.getValue(), endDatePicker.getValue());
     }
 
+    @FXML
+    private void queryBranchPerformance() {
+        query("分公司业绩视图", startDatePicker.getValue(), endDatePicker.getValue());
+    }
+
+    @FXML
+    private void queryClientConsumption() {
+        query("客户消费视图", startDatePicker.getValue(), endDatePicker.getValue());
+    }
+
+    @FXML
+    private void queryRouteIncome() {
+        query("线路收入视图", startDatePicker.getValue(), endDatePicker.getValue());
+    }
+
+    private String currentViewName;
+
     private void query(String viewName, LocalDate startDate, LocalDate endDate) {
+        this.currentViewName = viewName;
         try {
-            List<Map<String, Object>> data = model.query(viewName, guideId, startDate, endDate);
+            List<Map<String, Object>> data = model.query(viewName, guideId, userConnection, startDate, endDate);
 
             resultTable.getColumns().clear();
             resultTable.getItems().clear();
@@ -108,15 +156,27 @@ public class MainController {
                 statusLabel.setText("没有找到符合条件的数据");
             }
         } catch (Exception e) {
-            statusLabel.setText("查询失败：" + e.getMessage());
-            logger.severe("查询过程中发生异常: " + e.getMessage());  // 替换为日志记录
-            logger.throwing(MainController.class.getName(), "query", e); // 可选：记录异常堆栈
+            String errorMessage = e.getMessage();
+
+            // 判断是否是权限相关错误（根据数据库驱动返回的信息判断）
+            if (errorMessage.contains("command denied") || errorMessage.contains("权限") || errorMessage.contains("SQLSyntaxErrorException")) {
+                statusLabel.setText("无权查看该视图");
+            } else {
+                statusLabel.setText("查询失败：" + e.getMessage());
+            }
+
+            logger.severe("查询过程中发生异常: " + e.getMessage());
+            logger.throwing(MainController.class.getName(), "query", e);
         }
     }
 
-
     @FXML
     private void exportToCSV() {
+        if (currentViewName == null || resultTable.getItems().isEmpty()) {
+            Platform.runLater(() -> statusLabel.setText("没有可导出的数据"));
+            return;
+        }
+
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("保存CSV文件");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV文件", "*.csv"));
@@ -125,32 +185,21 @@ public class MainController {
         if (file != null) {
             new Thread(() -> {
                 try {
-                    // 获取当前表格列名作为视图名称（或从上下文取）
-                    String viewName = resultTable.getColumns().get(0).getText();
-
-                    // 查询数据（改用 List<Map<String, Object>>）
                     List<Map<String, Object>> data = model.query(
-                            viewName,
+                            currentViewName,
                             guideId,
+                            userConnection,
                             startDatePicker.getValue(),
                             endDatePicker.getValue()
                     );
-
-                    // 导出为 CSV
                     model.exportToCSV(data, file.getAbsolutePath());
-
-                    // 更新 UI 状态
                     Platform.runLater(() -> statusLabel.setText("导出成功：" + file.getAbsolutePath()));
-
                 } catch (Exception e) {
                     Platform.runLater(() -> statusLabel.setText("导出失败：" + e.getMessage()));
-                    logger.warning("导出过程中发生异常: " + e.getMessage());  // 替换为日志记录
-                    logger.throwing(MainController.class.getName(), "exportToCSV", e); // 可选：记录异常堆栈
                 }
             }).start();
         }
     }
-
 
     @FXML
     private BorderPane mainPane;
